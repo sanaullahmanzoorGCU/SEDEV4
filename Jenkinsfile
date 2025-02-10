@@ -1,61 +1,30 @@
 pipeline {
     agent any
-
-    environment {
-        PYTHON = 'python3' // Change to 'python' if using Python 2
-    }
-
+    
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    checkout scm
-                }
+                git 'https://github.com/sanaullahmanzoorGCU/SEDEV4.git' // Replace with your actual repo URL
             }
         }
-
-        stage('Setup Python') {
+        
+        stage('Setup Python Environment') {
             steps {
                 script {
-                    sh "${PYTHON} --version"
-                    sh "pip install --upgrade pip"
-                    sh "pip install pylint" // Install pylint for linting
+                    sh 'python3 -m venv venv' // Create virtual environment
+                    sh 'source venv/bin/activate' // Activate virtual environment
+                    sh 'pip install --upgrade pip' // Upgrade pip
+                    sh 'pip install -r requirements.txt || echo "No requirements file found."' // Install dependencies if available
                 }
             }
         }
-
-        stage('Linting') {
+        
+        stage('Run Script') {
             steps {
                 script {
-                    sh "pylint Dec2Hex.py || true" // Run pylint but do not fail the pipeline on warnings
+                    sh 'python3 Dec2Hex.py 255' // Example execution
                 }
             }
-        }
-
-        stage('Unit Tests') {
-            steps {
-                script {
-                    // If you have a test script, replace 'test_script.py' with actual test filename
-                    sh "${PYTHON} -m unittest discover || true"
-                }
-            }
-        }
-
-        stage('Execution') {
-            steps {
-                script {
-                    sh "${PYTHON} Dec2Hex.py 255" // Example input for testing
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo "Pipeline execution completed."
-        }
-        failure {
-            echo "Build failed! Check logs for more details."
         }
     }
 }
